@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Fintranet.Application.Core</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Fintranet.Domain\Fintranet.Domain.csproj" />
+      <ProjectReference Include="..\Fintranet.Repository\Fintranet.Repository.csproj" />
+    </ItemGroup>
+
+</Project>
