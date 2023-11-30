@@ -23,7 +23,35 @@ public class CreateCongestionTaxCommandHandler :
         if (_taxRule.ExemptDates!.FirstOrDefault(w => w == command.EntryTime.Date) != new DateTime()) return Task.FromResult(0M);
 
         var entryTimeOnly = TimeOnly.FromDateTime(command.EntryTime);
-        var crossAmount = _taxRule.TaxTimeRanges.FirstOrDefault(w => w.StartTime <= entryTimeOnly && w.EndTime >= entryTimeOnly)!.Amount;
+        var taxRange = _taxRule.TaxTimeRanges.FirstOrDefault(w => w.StartTime <= entryTimeOnly && w.EndTime >= entryTimeOnly);
+        var crossAmount = 0M;
+        if (taxRange is not null)
+        {
+            crossAmount = taxRange.Amount;
+        }
+        else 
+        {
+            var passedDateTimeRange = _taxRule.TaxTimeRanges.FirstOrDefault(w => w.StartTime > w.EndTime);
+            if (passedDateTimeRange is null) return Task.FromResult(0M);
+
+            var lastStartTimeRange = new DateTime(command.EntryTime.Year
+                                , command.EntryTime.Month
+                                , command.EntryTime.Day
+                                , passedDateTimeRange.StartTime.Hour
+                                , passedDateTimeRange.StartTime.Minute
+                                , 0);
+            var lastEndTimeRange = new DateTime(command.EntryTime.AddDays(1).Year
+                                , command.EntryTime.AddDays(1).Month
+                                , command.EntryTime.AddDays(1).Day
+                                , passedDateTimeRange.EndTime.Hour
+                                , passedDateTimeRange.EndTime.Minute
+                                , 0);
+
+            var foundTimeRange = lastStartTimeRange <= command.EntryTime && lastEndTimeRange >= command.EntryTime;
+            if (foundTimeRange)
+                crossAmount = passedDateTimeRange.Amount;
+        }
+
         if (crossAmount == 0) return Task.FromResult(0M);
 
         var todayCongestionTaxesByPlate = _congestionTaxRepository
